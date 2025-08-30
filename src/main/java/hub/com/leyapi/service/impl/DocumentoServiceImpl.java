@@ -50,7 +50,7 @@ public class DocumentoServiceImpl implements DocumentoService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // guardar archivo cargado
-        if (file != null && file.isEmpty()){
+        if (file != null && !file.isEmpty()){
             String filename = storageService.save(file);
             documento.setArchivoUrl(filename);
         }

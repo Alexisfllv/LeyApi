@@ -27,5 +27,4 @@ public interface DocumentoService {
     // listado de documentos por tipo de estado
     List<DocumentoDTOResponse> findByIdDocumentoEstado(String estado);
 
-
 }

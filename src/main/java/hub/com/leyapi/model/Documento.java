@@ -39,6 +39,6 @@ public class Documento {
     private String numeroExpediente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario",nullable = false)
+    @JoinColumn(name = "idUsuario",nullable = false)
     private Usuario usuario;
 }

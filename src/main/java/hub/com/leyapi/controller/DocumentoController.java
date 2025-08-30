@@ -39,19 +39,24 @@ public class DocumentoController {
             @RequestParam("idUsuario") Long idUsuario,
             @RequestPart("file") MultipartFile file) {
 
-        DocumentoDTORequest request = new DocumentoDTORequest(
-                titulo,
-                descripcion,
-                numeroExpediente,
-                idUsuario
+        DocumentoDTOResponse res = documentoService.saveDocumento(
+                titulo, descripcion, numeroExpediente, idUsuario,file
         );
-        DocumentoDTOResponse documentodto = documentoService.saveDocumento(request,file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(documentodto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DocumentoDTOResponse> updateDocumento(@PathVariable Long id, @RequestBody DocumentoDTORequest request, @RequestParam("file") MultipartFile file) {
-        DocumentoDTOResponse documentoDTOResponse = documentoService.updateDocumento(request, id,file);
+    public ResponseEntity<DocumentoDTOResponse> updateDocumento(
+            @PathVariable Long id,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("numeroExpediente") String numeroExpediente,
+            @RequestParam("idUsuario") Long idUsuario,
+            @RequestPart("file") MultipartFile file) {
+
+
+        DocumentoDTOResponse documentoDTOResponse = documentoService.updateDocumento
+                (titulo,descripcion,numeroExpediente,idUsuario,id,file);
         return ResponseEntity.status(HttpStatus.OK).body(documentoDTOResponse);
     }
 

@@ -11,8 +11,8 @@ public interface DocumentoService {
     List<DocumentoDTOResponse> ListDocumentos();
     DocumentoDTOResponse findbyIdDocumento(Long idDocumento);
     // post
-    DocumentoDTOResponse saveDocumento(DocumentoDTORequest request, MultipartFile multipartFile);
-    DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento, MultipartFile multipartFile);
+    DocumentoDTOResponse saveDocumento(String titulo,String descripcion,String numeroExpediente,Long idUsuario, MultipartFile multipartFile);
+    DocumentoDTOResponse updateDocumento(String titulo,String descripcion,String numeroExpediente,Long idUsuario, Long idDocumento, MultipartFile multipartFile);
     void deleteDocumento(Long idDocuemnto);
 
     // modificar documento cambiar de estado : ""

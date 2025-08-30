@@ -13,6 +13,7 @@ import hub.com.leyapi.util.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -43,48 +44,58 @@ public class DocumentoServiceImpl implements DocumentoService {
         return documentoMapper.toDocumentoDTOResponse(documento);
     }
 
+    @Transactional
     @Override
-    public DocumentoDTOResponse saveDocumento(DocumentoDTORequest request, MultipartFile file) {
-        Documento documento = documentoMapper.toDocumento(request);
-        Usuario usuario = usuarioRepo.findById(request.idUsuario())
+    public DocumentoDTOResponse saveDocumento(String titulo,String descripcion,String numeroExpediente,Long idUsuario, MultipartFile file) {
+
+        // Buscar usuario
+        Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // guardar archivo cargado
-        if (file != null && !file.isEmpty()){
-            String filename = storageService.save(file);
-            documento.setArchivoUrl(filename);
-        }
-
+        Documento documento = new Documento();
         documento.setUsuario(usuario);
+        documento.setTitulo(titulo);
+        documento.setDescripcion(descripcion);
+        documento.setNumeroExpediente(numeroExpediente);
         documento.setEstado(DocumentoEstado.PROCESO);
         documento.setFechaEnvio(LocalDateTime.now());
 
+        if (file != null && !file.isEmpty()){
+            documento.setArchivoUrl(storageService.save(file));
+            documento = documentoRepo.save(documento);
+        }else {
+            throw new RuntimeException("Archivo no encontrado");
+        }
 
-        documento = documentoRepo.save(documento);
         return documentoMapper.toDocumentoDTOResponse(documento);
     }
 
+    @Transactional
     @Override
-    public DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento,MultipartFile file) {
+    public DocumentoDTOResponse updateDocumento(String titulo,String descripcion,String numeroExpediente,Long idUsuario, Long idDocumento,MultipartFile file) {
+
+        // buscar documento
         Documento documento = documentoRepo.findById(idDocumento)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
 
-        Usuario usuario = usuarioRepo.findById(request.idUsuario())
+        // buscar usuario
+        Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // guardar archivo cargado
-        if (file != null && file.isEmpty()){
-            String filename = storageService.save(file);
-            documento.setArchivoUrl(filename);
-        }
-
         documento.setUsuario(usuario);
-        documento.setTitulo(request.titulo());
-        documento.setDescripcion(request.descripcion());
+        documento.setTitulo(titulo);
+        documento.setDescripcion(descripcion);
         documento.setFechaEnvio(LocalDateTime.now());
         documento.setEstado(DocumentoEstado.PROCESO);
-        documento.setNumeroExpediente(request.numeroExpediente());
-        documento = documentoRepo.save(documento);
+        documento.setNumeroExpediente(numeroExpediente);
+
+        // guardar archivo cargado
+        if (file != null && !file.isEmpty()){
+            documento.setArchivoUrl(storageService.save(file));
+            documento = documentoRepo.save(documento);
+        }else {
+            throw new RuntimeException("Archivo no encontrado");
+        }
         return documentoMapper.toDocumentoDTOResponse(documento);
     }
 

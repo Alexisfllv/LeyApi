@@ -9,9 +9,11 @@ import hub.com.leyapi.nums.DocumentoEstado;
 import hub.com.leyapi.repo.DocumentoRepo;
 import hub.com.leyapi.repo.UsuarioRepo;
 import hub.com.leyapi.service.DocumentoService;
+import hub.com.leyapi.util.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +26,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     private final DocumentoMapper documentoMapper;
     private final DocumentoRepo documentoRepo;
     private final UsuarioRepo usuarioRepo;
+    private final StorageService storageService;
 
     @Override
     public List<DocumentoDTOResponse> ListDocumentos() {
@@ -41,29 +44,43 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
     @Override
-    public DocumentoDTOResponse saveDocumento(DocumentoDTORequest request) {
+    public DocumentoDTOResponse saveDocumento(DocumentoDTORequest request, MultipartFile file) {
         Documento documento = documentoMapper.toDocumento(request);
         Usuario usuario = usuarioRepo.findById(request.idUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // guardar archivo cargado
+        if (file != null && file.isEmpty()){
+            String filename = storageService.save(file);
+            documento.setArchivoUrl(filename);
+        }
+
         documento.setUsuario(usuario);
         documento.setEstado(DocumentoEstado.PROCESO);
         documento.setFechaEnvio(LocalDateTime.now());
+
+
         documento = documentoRepo.save(documento);
         return documentoMapper.toDocumentoDTOResponse(documento);
     }
 
     @Override
-    public DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento) {
+    public DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento,MultipartFile file) {
         Documento documento = documentoRepo.findById(idDocumento)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
 
         Usuario usuario = usuarioRepo.findById(request.idUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        // guardar archivo cargado
+        if (file != null && file.isEmpty()){
+            String filename = storageService.save(file);
+            documento.setArchivoUrl(filename);
+        }
+
         documento.setUsuario(usuario);
         documento.setTitulo(request.titulo());
         documento.setDescripcion(request.descripcion());
-        documento.setArchivoUrl(request.archivoUrl());
         documento.setFechaEnvio(LocalDateTime.now());
         documento.setEstado(DocumentoEstado.PROCESO);
         documento.setNumeroExpediente(request.numeroExpediente());

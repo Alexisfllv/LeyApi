@@ -2,6 +2,7 @@ package hub.com.leyapi.service;
 
 import hub.com.leyapi.dto.documento.DocumentoDTORequest;
 import hub.com.leyapi.dto.documento.DocumentoDTOResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -10,8 +11,8 @@ public interface DocumentoService {
     List<DocumentoDTOResponse> ListDocumentos();
     DocumentoDTOResponse findbyIdDocumento(Long idDocumento);
     // post
-    DocumentoDTOResponse saveDocumento(DocumentoDTORequest request);
-    DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento);
+    DocumentoDTOResponse saveDocumento(DocumentoDTORequest request, MultipartFile multipartFile);
+    DocumentoDTOResponse updateDocumento(DocumentoDTORequest request, Long idDocumento, MultipartFile multipartFile);
     void deleteDocumento(Long idDocuemnto);
 
     // modificar documento cambiar de estado : ""
@@ -25,4 +26,6 @@ public interface DocumentoService {
 
     // listado de documentos por tipo de estado
     List<DocumentoDTOResponse> findByIdDocumentoEstado(String estado);
+
+
 }

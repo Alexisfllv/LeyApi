@@ -12,10 +12,15 @@ import hub.com.leyapi.service.DocumentoService;
 import hub.com.leyapi.util.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -91,8 +96,15 @@ public class DocumentoServiceImpl implements DocumentoService {
 
         // guardar archivo cargado
         if (file != null && !file.isEmpty()){
-            documento.setArchivoUrl(storageService.save(file));
-            documento = documentoRepo.save(documento);
+            // Extraer la parte real del nombre
+            String[] parts = documento.getArchivoUrl().split("\\.", 2);
+            String realName = parts.length == 2 ? parts[1] : documento.getArchivoUrl();
+            if (realName.contains(file.getOriginalFilename())) {
+                throw new RuntimeException("Archivo ya existente");
+            } else {
+                documento.setArchivoUrl(storageService.save(file));
+                documento = documentoRepo.save(documento);
+            }
         }else {
             throw new RuntimeException("Archivo no encontrado");
         }
@@ -125,7 +137,6 @@ public class DocumentoServiceImpl implements DocumentoService {
         } else {
             throw new IllegalArgumentException("ESTADO MAL ESCRITO : "+estado);
         }
-
         documento = documentoRepo.save(documento);
         return documentoMapper.toDocumentoDTOResponse(documento);
     }
@@ -162,6 +173,25 @@ public class DocumentoServiceImpl implements DocumentoService {
         return documentoList.stream().map(documento -> documentoMapper.toDocumentoDTOResponse(documento)).toList();
 
     }
+
+    @Override
+    public Resource downloadDocumento(Long idDocumento) {
+        Documento documento = documentoRepo.findById(idDocumento)
+                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+
+        try{
+            Path filePath = Paths.get("uploads").resolve(documento.getArchivoUrl()).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new RuntimeException("Documento no encontrado");
+            }
+            return resource;
+        } catch (MalformedURLException e){
+            throw new RuntimeException("Error cargando archivo", e);
+        }
+    }
+    //
 
 
 }

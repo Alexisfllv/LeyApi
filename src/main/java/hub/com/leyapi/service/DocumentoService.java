@@ -2,6 +2,7 @@ package hub.com.leyapi.service;
 
 import hub.com.leyapi.dto.documento.DocumentoDTORequest;
 import hub.com.leyapi.dto.documento.DocumentoDTOResponse;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -26,5 +27,9 @@ public interface DocumentoService {
 
     // listado de documentos por tipo de estado
     List<DocumentoDTOResponse> findByIdDocumentoEstado(String estado);
+
+
+    // descargar documento > archivo_url
+    Resource downloadDocumento(Long idDocumento);
 
 }

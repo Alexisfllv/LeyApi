@@ -4,6 +4,8 @@ import hub.com.leyapi.dto.documento.DocumentoDTORequest;
 import hub.com.leyapi.dto.documento.DocumentoDTOResponse;
 import hub.com.leyapi.service.DocumentoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -90,5 +92,16 @@ public class DocumentoController {
     public ResponseEntity<List<DocumentoDTOResponse>> getDocumentoEstado(@RequestParam String estado) {
         List<DocumentoDTOResponse> list = documentoService.findByIdDocumentoEstado(estado);
         return ResponseEntity.status(HttpStatus.OK).body(list);
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> downloadDocumento(@PathVariable Long id) {
+        Resource resource = documentoService.downloadDocumento(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }

@@ -29,7 +29,13 @@ public class StorageService {
         }
     }
 
-    // recupeara nombre String de multipartfile
+    //
+    public boolean exists(String filename) {
+        String UPLOAD_DIR = "uploads";
+        Path path = Paths.get(UPLOAD_DIR).resolve(filename); // UPLOAD_DIR = tu carpeta de uploads
+        return Files.exists(path);
+    }
+
 
 
 }

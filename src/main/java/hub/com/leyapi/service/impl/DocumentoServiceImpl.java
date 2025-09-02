@@ -90,21 +90,12 @@ public class DocumentoServiceImpl implements DocumentoService {
         documento.setUsuario(usuario);
         documento.setTitulo(titulo);
         documento.setDescripcion(descripcion);
-        documento.setFechaEnvio(LocalDateTime.now());
-        documento.setEstado(DocumentoEstado.PROCESO);
         documento.setNumeroExpediente(numeroExpediente);
 
         // guardar archivo cargado
         if (file != null && !file.isEmpty()){
-            // Extraer la parte real del nombre
-            String[] parts = documento.getArchivoUrl().split("\\.", 2);
-            String realName = parts.length == 2 ? parts[1] : documento.getArchivoUrl();
-            if (realName.contains(file.getOriginalFilename())) {
-                throw new RuntimeException("Archivo ya existente");
-            } else {
-                documento.setArchivoUrl(storageService.save(file));
-                documento = documentoRepo.save(documento);
-            }
+            documento.setArchivoUrl(storageService.save(file));
+            documento = documentoRepo.save(documento);
         }else {
             throw new RuntimeException("Archivo no encontrado");
         }

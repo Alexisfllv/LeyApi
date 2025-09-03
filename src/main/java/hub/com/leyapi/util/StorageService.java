@@ -12,20 +12,39 @@ import java.util.UUID;
 @Service
 public class StorageService {
 
+    // Carpeta raíz donde se guardarán los archivos
     private final Path rootLocation = Paths.get("uploads");
+
+    // Tamaño máximo permitido: 5 MB
+    private static final long MAX_FILE_SIZE = 5_000_000;
 
     public String save(MultipartFile file) {
         try {
-            if (file.isEmpty()) throw new RuntimeException("Archivo no encontrado");
+            // Validación: archivo no vacío
+            if (file.isEmpty()) {
+                throw new IllegalArgumentException("Archivo no encontrado");
+            }
 
-            Files.createDirectories(rootLocation);
+            // Validación: solo PDFs
+            if (!"application/pdf".equalsIgnoreCase(file.getContentType())) {
+                throw new IllegalArgumentException("Solo se permiten archivos PDF");
+            }
 
-            String filename = UUID.randomUUID().toString() + "." + file.getOriginalFilename();
+            // Validación: tamaño máximo
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new IllegalArgumentException("Archivo demasiado grande. Máximo permitido: 5 MB");
+            }
+            // Generar nombre aleatorio con UUID + extensión .pdf
+            String filename = UUID.randomUUID().toString() + ".pdf";
+
+            // Guardar archivo en disco
             Path destino = rootLocation.resolve(filename);
-            Files.copy(file.getInputStream(),destino, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
+
             return filename;
+
         } catch (Exception e) {
-            throw new RuntimeException("Error guardando archivo",e);
+            throw new RuntimeException("Error guardando archivo", e);
         }
     }
 

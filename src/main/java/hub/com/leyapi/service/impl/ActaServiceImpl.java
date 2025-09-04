@@ -11,11 +11,21 @@ import hub.com.leyapi.service.ActaService;
 import hub.com.leyapi.util.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -51,7 +61,30 @@ public class ActaServiceImpl implements ActaService {
     }
 
     @Override
-    public ActaDTOResponse getActaById(Long id) {
-        return null;
+    public Resource downloadAllFiles(Long id) {
+        Actas acta = actaRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Acta no encontrado"));
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(baos);
+
+            for(Chives chives : acta.getChives()) {
+                Path filePath = Paths.get("uploads").resolve(chives.getUrl()).normalize();
+
+                try (InputStream fis = Files.newInputStream(filePath)){
+                    ZipEntry zipEntry = new ZipEntry(chives.getNombre());
+                    zos.putNextEntry(zipEntry);
+
+                    byte[] bytes = fis.readAllBytes();
+                    zos.write(bytes,0, bytes.length);
+                    zos.closeEntry();
+                }
+            }
+            zos.close();
+            return new ByteArrayResource(baos.toByteArray());
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
     }
 }

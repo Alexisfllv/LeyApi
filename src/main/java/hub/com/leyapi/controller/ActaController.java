@@ -5,6 +5,8 @@ import hub.com.leyapi.dto.actas.ActaDTORequest;
 import hub.com.leyapi.dto.actas.ActaDTOResponse;
 import hub.com.leyapi.service.ActaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,4 +29,17 @@ public class ActaController {
         ActaDTOResponse res =  actaService.saveActa(titulo, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
+
+    // descargar resource zip
+    @GetMapping("/{idActa}/download")
+    public ResponseEntity<Resource> downloadActa(@PathVariable Long idActa) {
+
+        Resource resource = actaService.downloadAllFiles(idActa);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=acta_" + idActa+".zip")
+                .body(resource);
+    }
+
 }

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -87,4 +90,34 @@ public class ActaServiceImpl implements ActaService {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public Resource downloadActa(Long idActa, Long idChives) {
+        // Buscar directamente el chives con acta en la BD
+        Chives chives = chiveRepo.findByIdChivesAndActa_IdActa(idChives, idActa)
+                .orElseThrow(() -> new RuntimeException("Chive no encontrado para ese acta"));
+
+        // Verificar existencia del archivo
+        Path filePath = Paths.get("uploads")
+                .resolve(chives.getUrl())
+                .normalize();
+
+        if (Files.notExists(filePath)) {
+            throw new RuntimeException("Archivo físico no encontrado: " + filePath);
+        }
+
+        try {
+            return new ByteArrayResource(Files.readAllBytes(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer el archivo", e);
+        }
+    }
+
+    @Override
+    public Page<ActaDTOResponse> findAllPageCategory(Pageable pageable) {
+        Page<Actas> actas = actaRepo.findAll(pageable);
+        return actas.map(actas1 ->  actaMapper.toActaDTOResponse(actas1));
+
+    }
+
 }

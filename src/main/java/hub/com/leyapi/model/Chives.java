@@ -20,6 +20,6 @@ public class Chives {
     private String url;      // ruta en el servidor
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idActa", nullable = false)
+    @JoinColumn(name = "id_acta", nullable = false)
     private Actas acta;
 }

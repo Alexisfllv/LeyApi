@@ -3,6 +3,7 @@ package hub.com.leyapi.controller;
 import hub.com.leyapi.dto.usuario.UsuarioDTORequest;
 import hub.com.leyapi.dto.usuario.UsuarioDTOResponse;
 import hub.com.leyapi.service.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    ResponseEntity<UsuarioDTOResponse> createUsuario(@RequestBody UsuarioDTORequest usuarioDTORequest){
+    ResponseEntity<UsuarioDTOResponse> createUsuario(@Valid  @RequestBody UsuarioDTORequest usuarioDTORequest){
         UsuarioDTOResponse usuarioDTOResponse = usuarioService.saveUsuario(usuarioDTORequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioDTOResponse);
     }

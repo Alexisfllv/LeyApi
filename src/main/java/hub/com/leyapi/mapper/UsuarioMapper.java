@@ -12,5 +12,6 @@ public interface UsuarioMapper {
     // Entity
     Usuario toUsuario(UsuarioDTORequest usuarioDTORequest);
 
+    @Mapping(source = "nombre", target = "nombre")
     UsuarioDTOResponse toUsuarioDTOResponse(Usuario usuario);
 }

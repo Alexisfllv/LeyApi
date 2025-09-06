@@ -3,6 +3,7 @@ package hub.com.leyapi.service.impl;
 import hub.com.leyapi.dto.documento.DocumentoDTORequest;
 import hub.com.leyapi.dto.documento.DocumentoDTOResponse;
 import hub.com.leyapi.mapper.DocumentoMapper;
+import hub.com.leyapi.menss.NotifiacionService;
 import hub.com.leyapi.model.Documento;
 import hub.com.leyapi.model.Usuario;
 import hub.com.leyapi.nums.DocumentoEstado;
@@ -12,12 +13,14 @@ import hub.com.leyapi.service.DocumentoService;
 import hub.com.leyapi.util.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +36,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     private final DocumentoRepo documentoRepo;
     private final UsuarioRepo usuarioRepo;
     private final StorageService storageService;
+    private final NotifiacionService notifiacionService;
 
     @Override
     public List<DocumentoDTOResponse> ListDocumentos() {
@@ -123,11 +127,33 @@ public class DocumentoServiceImpl implements DocumentoService {
         estado = estado.toUpperCase();
         if (estado.equals(DocumentoEstado.REALIZADO.toString())) {
             documento.setEstado(DocumentoEstado.REALIZADO);
+
         } else if (estado.equals(DocumentoEstado.RECHAZADO.toString())) {
             documento.setEstado(DocumentoEstado.RECHAZADO);
         } else {
             throw new IllegalArgumentException("ESTADO MAL ESCRITO : "+estado);
         }
+
+//        // disparar notificacion
+//        notifiacionService.notifyUsuario(
+//                documento.getUsuario().getCorreo(),
+//                "Estado : "+ documento.getEstado() + "su documento",
+//                "Con el expediente : "+documento.getNumeroExpediente()
+//                + " Cambio a estado : " + documento.getEstado()
+//        );
+
+        // disparar notificacion con adjunto
+        Path filePath = Paths.get("uploads").resolve(documento.getArchivoUrl()).normalize();
+        Resource pdf = new FileSystemResource(filePath);
+
+        notifiacionService.notifyUsuarioWithAttachment(
+                documento.getUsuario().getCorreo(),
+                "Estado actualizado de su documento",
+                "El expediente " + documento.getNumeroExpediente() +
+                        " cambió a estado: " + documento.getEstado(),
+                pdf
+        );
+
         documento = documentoRepo.save(documento);
         return documentoMapper.toDocumentoDTOResponse(documento);
     }

@@ -46,4 +46,26 @@ public class EmailNotificacionService implements NotifiacionService {
             throw new RuntimeException("Error enviado correo con adjunto " +e);
         }
     }
+
+    @Override
+    public void notifyUsuarioGui(String to, String subject, String body, Resource resource) {
+        try{
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message,true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            // contenido html
+            helper.setText(body,true);
+
+            // archivo
+            if (resource != null && resource.exists()) {
+                helper.addAttachment(resource.getFilename(), resource);
+            }
+            mailSender.send(message);
+
+
+        }catch (MessagingException e){
+            throw new RuntimeException("Error enviado correo con adjunto " +e);
+        }
+    }
 }

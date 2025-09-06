@@ -11,4 +11,7 @@ public interface NotifiacionService {
 
     // para correo con pdf
     void notifyUsuarioWithAttachment(String to , String subject , String body , Resource resource);
+
+    // para correo con html
+    void notifyUsuarioGui(String to , String subject , String body , Resource resource);
 }

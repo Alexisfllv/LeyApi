@@ -133,7 +133,7 @@ public class DocumentoServiceImpl implements DocumentoService {
         } else {
             throw new IllegalArgumentException("ESTADO MAL ESCRITO : "+estado);
         }
-
+// 01
 //        // disparar notificacion
 //        notifiacionService.notifyUsuario(
 //                documento.getUsuario().getCorreo(),
@@ -141,18 +141,57 @@ public class DocumentoServiceImpl implements DocumentoService {
 //                "Con el expediente : "+documento.getNumeroExpediente()
 //                + " Cambio a estado : " + documento.getEstado()
 //        );
+// 02
+//        // disparar notificacion con adjunto
+//        Path filePath = Paths.get("uploads").resolve(documento.getArchivoUrl()).normalize();
+//        Resource pdf = new FileSystemResource(filePath);
+//
+//        notifiacionService.notifyUsuarioWithAttachment(
+//                documento.getUsuario().getCorreo(),
+//                "Estado actualizado de su documento",
+//                "El expediente " + documento.getNumeroExpediente() +
+//                        " cambió a estado: " + documento.getEstado(),
+//                pdf
+//        );
 
-        // disparar notificacion con adjunto
         Path filePath = Paths.get("uploads").resolve(documento.getArchivoUrl()).normalize();
         Resource pdf = new FileSystemResource(filePath);
 
-        notifiacionService.notifyUsuarioWithAttachment(
+        String color = "black"; // default
+        if (documento.getEstado().equals("REALIZADO")) {
+            color = "#28a745"; // verde bootstrap
+        } else if (documento.getEstado().equals("RECHAZADO")) {
+            color = "#dc3545"; // rojo bootstrap
+        }
+
+// cuerpo del correo en HTML
+        String htmlBody = """
+    <html>
+      <body style="font-family: Arial, sans-serif; color: #333;">
+        <h2 style="color:#2E86C1;">📄 Notificación de Documento</h2>
+        <p>Estimado <b>%s %s</b>,</p>
+        <p>Su expediente <b>%s</b> ha cambiado al estado:</p>
+        <p style="font-size:16px; color:%s;"><b>%s</b></p>
+        <hr>
+        <p>Puedes revisar el documento adjunto.</p>
+        <p style="font-size:12px; color:gray;">
+          Mesa de Partes Digital - Gobierno del Perú
+        </p>
+      </body>
+    </html>
+    """.formatted(
+                documento.getUsuario().getNombre(),
+                documento.getUsuario().getApellido(),
+                documento.getNumeroExpediente(),
+                color,
+                documento.getEstado()
+        );
+
+        notifiacionService.notifyUsuarioGui(
                 documento.getUsuario().getCorreo(),
                 "Estado actualizado de su documento",
-                "El expediente " + documento.getNumeroExpediente() +
-                        " cambió a estado: " + documento.getEstado(),
-                pdf
-        );
+                htmlBody,
+                pdf);
 
         documento = documentoRepo.save(documento);
         return documentoMapper.toDocumentoDTOResponse(documento);

@@ -2,6 +2,7 @@ package hub.com.leyapi.service.impl;
 
 import hub.com.leyapi.dto.usuario.UsuarioDTORequest;
 import hub.com.leyapi.dto.usuario.UsuarioDTOResponse;
+import hub.com.leyapi.exception.ResourceNotFoundException;
 import hub.com.leyapi.mapper.UsuarioMapper;
 import hub.com.leyapi.model.Usuario;
 import hub.com.leyapi.repo.UsuarioRepo;
@@ -30,7 +31,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioDTOResponse findByIdUsuario(Long idUsuario) {
         Usuario usuario = usuarioRepo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario not found"));
         return usuarioMapper.toUsuarioDTOResponse(usuario);
     }
 
@@ -45,7 +46,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioDTOResponse updateUsuario(UsuarioDTORequest request, Long idUsuario) {
         Usuario usuario = usuarioRepo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario not found"));
         usuario.setNombre(request.nombre());
         usuario.setApellido(request.apellido());
         usuario.setDni(request.dni());
@@ -60,7 +61,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void deleteUsuario(Long idUsuario) {
 
         Usuario usuario = usuarioRepo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario not found"));
         usuarioRepo.delete(usuario);
     }
 }

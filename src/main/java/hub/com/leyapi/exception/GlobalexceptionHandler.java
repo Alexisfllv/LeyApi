@@ -2,6 +2,7 @@ package hub.com.leyapi.exception;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,5 +42,17 @@ public class GlobalexceptionHandler {
                 "ValidationError"
         );
         return ResponseEntity.badRequest().body(response);
+    }
+
+    // 💽 2.5 - Errores de base de datos (SQL, integridad, etc)
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDatabase(DataAccessException ex, HttpServletRequest request) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error en la base de datos",
+                request.getRequestURI(),
+                "DatabaseError"
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
